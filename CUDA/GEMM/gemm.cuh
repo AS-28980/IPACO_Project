@@ -32,9 +32,9 @@
 #  endif
 
 #  ifdef STANDARD_DATASET /* Default if unspecified. */
-#define NI 512
-#define NJ 512
-#define NK 512
+#define NI 4096
+#define NJ 4096
+#define NK 4096
 #  endif
 
 #  ifdef LARGE_DATASET
@@ -60,8 +60,8 @@
 # endif
 
 /* Thread block dimensions */
-#define DIM_THREAD_BLOCK_X 32
-#define DIM_THREAD_BLOCK_Y 8
+#define DIM_THREAD_BLOCK_X 16
+#define DIM_THREAD_BLOCK_Y 16
 
 
 #endif /* !GEMM*/

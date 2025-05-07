@@ -151,16 +151,16 @@ __global__ void gemm_kernel_tiled(int ni,int nj,int nk, DATA_TYPE alpha, DATA_TY
 
     for (int t = 0; t < nk; t += TILE) {
 
-    /* A is NI×NK, B is NK×NJ */
-    shA[threadIdx.y][threadIdx.x] = (row < ni && t+threadIdx.x < nk) ? A[row*NK + t+threadIdx.x] : 0;
-    
-    shB[threadIdx.y][threadIdx.x] = (t+threadIdx.y < nk && col < nj) ? B[(t+threadIdx.y)*NJ + col] : 0;
-    
-    __syncthreads();
-    
-    #pragma unroll
-    for (int k = 0; k < TILE; ++k)
-        acc += shA[threadIdx.y][k] * shB[k][threadIdx.x];
+        /* A is NI×NK, B is NK×NJ */
+        shA[threadIdx.y][threadIdx.x] = (row < ni && t+threadIdx.x < nk) ? A[row*NK + t+threadIdx.x] : 0;
+        
+        shB[threadIdx.y][threadIdx.x] = (t+threadIdx.y < nk && col < nj) ? B[(t+threadIdx.y)*NJ + col] : 0;
+        
+        __syncthreads();
+        
+        #pragma unroll
+        for (int k = 0; k < TILE; ++k)
+            acc += shA[threadIdx.y][k] * shB[k][threadIdx.x];
         __syncthreads();
     }
 
