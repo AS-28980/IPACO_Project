@@ -105,23 +105,6 @@ void GPU_argv_init()
     cudaSetDevice( GPU_DEVICE );
 }
 
-
-// __global__ void mm2_kernel1(int ni, int nj, int nk, int nl, DATA_TYPE alpha, DATA_TYPE beta, DATA_TYPE *tmp, DATA_TYPE *A, DATA_TYPE *B)
-// {
-//     int j = blockIdx.x * blockDim.x + threadIdx.x;
-//     int i = blockIdx.y * blockDim.y + threadIdx.y;
-
-//     if ((i < _PB_NI) && (j < _PB_NJ))
-//     { 
-//         tmp[i * NJ + j] = 0;
-//         int k;
-//         for (k = 0; k < _PB_NK; k++)
-//         {
-//             tmp[i * NJ + j] += alpha * A[i * NK + k] * B[k * NJ + j];
-//         }
-//     }
-// }
-
 __global__ void mm2_kernel1_tiled_pipelined(int ni,int nj,int nk, DATA_TYPE alpha, const DATA_TYPE* __restrict__ A, const DATA_TYPE* __restrict__ B, DATA_TYPE* __restrict__ tmp)
 {
     __shared__ DATA_TYPE shA1[TILE][TILE];
@@ -225,24 +208,7 @@ __global__ void mm2_kernel1_tiled_pipelined(int ni,int nj,int nk, DATA_TYPE alph
     }
 }
 
-
-// __global__ void mm2_kernel2(int ni, int nj, int nk, int nl, DATA_TYPE alpha, DATA_TYPE beta, DATA_TYPE *tmp, DATA_TYPE *C, DATA_TYPE *D)
-// {
-//     int j = blockIdx.x * blockDim.x + threadIdx.x;
-//     int i = blockIdx.y * blockDim.y + threadIdx.y;
-
-//     if ((i < _PB_NI) && (j < _PB_NL))
-//     { 
-//         D[i * NL + j] *= beta;
-//         int k;
-//         for (k = 0; k < _PB_NJ; k++)
-//         {
-//             D[i * NL + j] += tmp[i * NJ + k] * C[k * NL + j];
-//         }
-//     }
-// }
-
-__global__ void mm2_kernel2_tiled(int ni,int nj,int nk,int nl, DATA_TYPE beta, const DATA_TYPE* __restrict__ tmp, const DATA_TYPE* __restrict__ C, DATA_TYPE* __restrict__ D)
+__global__ void mm2_kernel2_tiled_pipelined(int ni,int nj,int nk,int nl, DATA_TYPE beta, const DATA_TYPE* __restrict__ tmp, const DATA_TYPE* __restrict__ C, DATA_TYPE* __restrict__ D)
 {
     __shared__ DATA_TYPE shT1[TILE][TILE];
     __shared__ DATA_TYPE shT2[TILE][TILE];
@@ -443,7 +409,7 @@ void mm2Cuda(int ni, int nj, int nk, int nl, DATA_TYPE alpha, DATA_TYPE beta, DA
     polybench_start_instruments;
     mm2_kernel1_tiled_pipelined<<<grid1, block>>>(ni,nj,nk,alpha,A_gpu,B_gpu,tmp_gpu);
     cudaDeviceSynchronize();
-    mm2_kernel2_tiled<<<grid2, block>>>(ni,nj,nk,nl,beta,tmp_gpu,C_gpu,D_gpu);
+    mm2_kernel2_tiled_pipelined<<<grid2, block>>>(ni,nj,nk,nl,beta,tmp_gpu,C_gpu,D_gpu);
     cudaDeviceSynchronize();
     polybench_stop_instruments;
 
