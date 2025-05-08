@@ -110,7 +110,7 @@ __global__ void mm2_kernel1(int ni, int nj, int nk, int nl, DATA_TYPE alpha, DAT
 
         __syncthreads();
 
-        if ((warp_id & 1) == 0)
+        if ((warp_id % 8) != 0)
         {
             #pragma unroll
             for (int k = 0; k < TILE_DIM; ++k)
@@ -132,7 +132,7 @@ __global__ void mm2_kernel1(int ni, int nj, int nk, int nl, DATA_TYPE alpha, DAT
 
     if (row < ni && col < nj)
     {
-        if ((warp_id & 1) == 0)
+        if ((warp_id % 8) != 0)
             tmp[row * nj + col] = alpha * acc32;
         else
             tmp[row * nj + col] = (float)(alpha * acc64);
@@ -168,7 +168,7 @@ __global__ void mm2_kernel2(int ni, int nj, int nk, int nl, DATA_TYPE alpha, DAT
 
         __syncthreads();
 
-        if ((warp_id & 1) == 0)
+        if ((warp_id % 8) != 0)
         {
             #pragma unroll
             for (int k = 0; k < TILE_DIM; ++k)
@@ -190,7 +190,7 @@ __global__ void mm2_kernel2(int ni, int nj, int nk, int nl, DATA_TYPE alpha, DAT
 
     if (row < ni && col < nl)
     {
-        if ((warp_id & 1) == 0)
+        if ((warp_id % 8) != 0)
         {
             float res = fmaf(D[row * nl + col], beta, 0.0f);
             D[row * nl + col] = res + acc32;
