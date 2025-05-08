@@ -173,7 +173,7 @@ __global__ void mm2_kernel2(int ni, int nj, int nk, int nl, DATA_TYPE alpha, DAT
             #pragma unroll
             for (int k = 0; k < TILE_DIM; ++k)
             {
-                acc32 = fma32(Ts[threadIdx.y][k], Cs[k][threadIdx.x], acc32);
+                acc32 = fmaf(Ts[threadIdx.y][k], Cs[k][threadIdx.x], acc32);
             }
         }
         else
@@ -192,7 +192,7 @@ __global__ void mm2_kernel2(int ni, int nj, int nk, int nl, DATA_TYPE alpha, DAT
     {
         if ((warp_id & 1) == 0)
         {
-            float res = fma32(D[row * nl + col], beta, 0.0f);
+            float res = fmaf(D[row * nl + col], beta, 0.0f);
             D[row * nl + col] = res + acc32;
         }
         else
